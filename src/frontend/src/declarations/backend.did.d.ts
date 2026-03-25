@@ -126,6 +126,7 @@ export interface _SERVICE {
   'updateRabbitInAuction' : ActorMethod<[RabbitId, bigint, bigint], undefined>,
   'updateRabbitMaterials' : ActorMethod<[RabbitId, string], undefined>,
   'updateRabbitName' : ActorMethod<[RabbitId, string], undefined>,
+  'claimFirstAdmin' : ActorMethod<[string], undefined>,
 }
 export declare const idlService: IDL.ServiceClass;
 export declare const idlInitArgs: IDL.Type[];

@@ -154,6 +154,7 @@ export const idlService = IDL.Service({
   'updateRabbitInAuction' : IDL.Func([RabbitId, IDL.Nat, IDL.Int], [], []),
   'updateRabbitMaterials' : IDL.Func([RabbitId, IDL.Text], [], []),
   'updateRabbitName' : IDL.Func([RabbitId, IDL.Text], [], []),
+  'claimFirstAdmin' : IDL.Func([IDL.Text], [], []),
 });
 
 export const idlInitArgs = [];
@@ -309,6 +310,7 @@ export const idlFactory = ({ IDL }) => {
     'updateRabbitInAuction' : IDL.Func([RabbitId, IDL.Nat, IDL.Int], [], []),
     'updateRabbitMaterials' : IDL.Func([RabbitId, IDL.Text], [], []),
     'updateRabbitName' : IDL.Func([RabbitId, IDL.Text], [], []),
+  'claimFirstAdmin' : IDL.Func([IDL.Text], [], []),
   });
 };
 

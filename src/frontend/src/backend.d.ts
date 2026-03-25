@@ -93,4 +93,5 @@ export interface backendInterface {
     updateRabbitInAuction(rabbitId: RabbitId, price: bigint, durationInSeconds: bigint): Promise<void>;
     updateRabbitMaterials(rabbitId: RabbitId, newMaterials: string): Promise<void>;
     updateRabbitName(rabbitId: RabbitId, newName: string): Promise<void>;
+    claimFirstAdmin(userSecret: string): Promise<void>;
 }

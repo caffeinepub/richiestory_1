@@ -248,4 +248,19 @@ export function useCreateRabbit() {
   });
 }
 
+export function useClaimFirstAdmin() {
+  const { actor } = useActor();
+  const qc = useQueryClient();
+  return useMutation({
+    mutationFn: async (adminToken: string) => {
+      if (!actor) throw new Error("No actor");
+      return actor.claimFirstAdmin(adminToken);
+    },
+    onSuccess: () => {
+      qc.invalidateQueries({ queryKey: ["isAdmin"] });
+      qc.invalidateQueries({ queryKey: ["rabbits"] });
+    },
+  });
+}
+
 export { Rarity, RabbitStatus };

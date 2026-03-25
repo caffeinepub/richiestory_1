@@ -4,6 +4,7 @@ import { LogOut, Menu, Settings, User, X } from "lucide-react";
 import { useState } from "react";
 import { useInternetIdentity } from "../hooks/useInternetIdentity";
 import { useIsCallerAdmin } from "../hooks/useQueries";
+import { AuthModal } from "./AuthModal";
 
 const navLinks = [
   { label: "Catalog", to: "/catalog" },
@@ -15,8 +16,11 @@ export function Header() {
   const { login, clear, loginStatus, identity } = useInternetIdentity();
   const location = useLocation();
   const [mobileOpen, setMobileOpen] = useState(false);
+  const [authModalOpen, setAuthModalOpen] = useState(false);
   const isLoggedIn = loginStatus === "success" && !!identity;
   const { data: isAdmin } = useIsCallerAdmin();
+
+  const openAuth = () => setAuthModalOpen(true);
 
   return (
     <header className="sticky top-0 z-50 w-full border-b border-border bg-card/95 backdrop-blur-sm shadow-xs">
@@ -104,17 +108,17 @@ export function Header() {
               <Button
                 variant="outline"
                 size="sm"
-                onClick={() => login()}
+                onClick={openAuth}
                 className="rounded-full font-semibold border-border"
-                data-ocid="nav.link"
+                data-ocid="auth.open_modal_button"
               >
                 Sign in
               </Button>
               <Button
                 size="sm"
-                onClick={() => login()}
+                onClick={openAuth}
                 className="rounded-full font-semibold bg-primary text-primary-foreground hover:bg-primary/90"
-                data-ocid="nav.link"
+                data-ocid="auth.open_modal_button"
               >
                 Join
               </Button>
@@ -193,22 +197,22 @@ export function Header() {
                   variant="outline"
                   size="sm"
                   onClick={() => {
-                    login();
                     setMobileOpen(false);
+                    openAuth();
                   }}
                   className="rounded-full font-semibold"
-                  data-ocid="nav.link"
+                  data-ocid="auth.open_modal_button"
                 >
                   Sign in
                 </Button>
                 <Button
                   size="sm"
                   onClick={() => {
-                    login();
                     setMobileOpen(false);
+                    openAuth();
                   }}
                   className="rounded-full font-semibold"
-                  data-ocid="nav.link"
+                  data-ocid="auth.open_modal_button"
                 >
                   Join
                 </Button>
@@ -217,6 +221,12 @@ export function Header() {
           </div>
         </div>
       )}
+
+      <AuthModal
+        open={authModalOpen}
+        onClose={() => setAuthModalOpen(false)}
+        onLogin={login}
+      />
     </header>
   );
 }

@@ -1,3 +1,4 @@
+import Prim "mo:prim";
 import Text "mo:core/Text";
 import Time "mo:core/Time";
 import Principal "mo:core/Principal";
@@ -612,6 +613,22 @@ actor {
     switch (messages.get(collectorId)) {
       case (null) { [] };
       case (?msgs) { msgs.toArray() };
+    };
+  };
+
+  // Allow claiming admin role even if already registered as user,
+  // as long as no admin has been assigned yet and the caller provides the correct token.
+  public shared ({ caller }) func claimFirstAdmin(userSecret : Text) : async () {
+    switch (Prim.envVar<system>("CAFFEINE_ADMIN_TOKEN")) {
+      case (null) { Runtime.trap("CAFFEINE_ADMIN_TOKEN not set") };
+      case (?adminToken) {
+        if (not accessControlState.adminAssigned and userSecret == adminToken) {
+          accessControlState.userRoles.add(caller, #admin);
+          accessControlState.adminAssigned := true;
+        } else {
+          Runtime.trap("Invalid admin token or admin already assigned");
+        };
+      };
     };
   };
 };

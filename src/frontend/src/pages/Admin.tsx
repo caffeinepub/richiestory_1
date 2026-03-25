@@ -17,9 +17,11 @@ import { motion } from "motion/react";
 import { useRef, useState } from "react";
 import { toast } from "sonner";
 import { ExternalBlob, Rarity } from "../backend.d";
+import { AuthModal } from "../components/AuthModal";
 import { sampleRabbits } from "../data/sampleData";
 import { useInternetIdentity } from "../hooks/useInternetIdentity";
 import {
+  useClaimFirstAdmin,
   useCreateRabbit,
   useGetAllRabbits,
   useIsCallerAdmin,
@@ -38,11 +40,15 @@ const rarityColors: Record<Rarity, string> = {
 };
 
 export default function AdminPage() {
-  const { identity, loginStatus } = useInternetIdentity();
+  const { identity, loginStatus, login } = useInternetIdentity();
   const isLoggedIn = loginStatus === "success" && !!identity;
+  const [authModalOpen, setAuthModalOpen] = useState(false);
   const { data: isAdmin, isLoading: adminLoading } = useIsCallerAdmin();
   const { data: rabbits, isLoading: rabbitsLoading } = useGetAllRabbits();
   const createRabbit = useCreateRabbit();
+
+  const claimFirstAdmin = useClaimFirstAdmin();
+  const [adminTokenInput, setAdminTokenInput] = useState("");
 
   const fileInputRef = useRef<HTMLInputElement>(null);
   const [imageFile, setImageFile] = useState<File | null>(null);
@@ -124,13 +130,28 @@ export default function AdminPage() {
 
   if (!isLoggedIn) {
     return (
-      <main className="container mx-auto px-6 max-w-7xl py-20 text-center">
-        <ShieldAlert className="w-16 h-16 text-muted-foreground mx-auto mb-4" />
-        <h1 className="text-2xl font-extrabold text-foreground mb-3">
-          Authorization required
-        </h1>
-        <p className="text-muted-foreground">Sign in as admin</p>
-      </main>
+      <>
+        <main className="container mx-auto px-6 max-w-7xl py-20 text-center">
+          <ShieldAlert className="w-16 h-16 text-muted-foreground mx-auto mb-4" />
+          <h1 className="text-2xl font-extrabold text-foreground mb-3">
+            Authorization required
+          </h1>
+          <p className="text-muted-foreground mb-6">
+            Sign in to access the admin panel
+          </p>
+          <Button
+            onClick={() => setAuthModalOpen(true)}
+            className="rounded-full px-8 h-12 font-bold"
+          >
+            Sign In
+          </Button>
+        </main>
+        <AuthModal
+          open={authModalOpen}
+          onClose={() => setAuthModalOpen(false)}
+          onLogin={login}
+        />
+      </>
     );
   }
 
@@ -144,18 +165,65 @@ export default function AdminPage() {
   }
 
   if (!isAdmin) {
+    const handleClaimAdmin = async (e: React.FormEvent) => {
+      e.preventDefault();
+      if (!adminTokenInput.trim()) return;
+      try {
+        await claimFirstAdmin.mutateAsync(adminTokenInput.trim());
+        setAdminTokenInput("");
+        toast.success("You are now the admin! Refresh the page.");
+        window.location.reload();
+      } catch {
+        toast.error("Invalid token or admin already exists");
+      }
+    };
+
     return (
-      <main className="container mx-auto px-6 max-w-7xl py-20 text-center">
-        <ShieldAlert className="w-16 h-16 text-destructive mx-auto mb-4" />
-        <h1 className="text-2xl font-extrabold text-foreground mb-3">
-          Access denied
-        </h1>
-        <p className="text-muted-foreground mb-6">
-          This page is for admins only
-        </p>
-        <Link to="/">
-          <Button className="rounded-full">Home</Button>
-        </Link>
+      <main className="container mx-auto px-6 max-w-7xl py-20">
+        <div className="max-w-md mx-auto text-center">
+          <ShieldAlert className="w-16 h-16 text-amber-500 mx-auto mb-4" />
+          <h1 className="text-2xl font-extrabold text-foreground mb-2">
+            Admin Setup
+          </h1>
+          <p className="text-muted-foreground mb-8">
+            Enter your Admin Token to claim administrator access. You can find
+            the token in your Caffeine app settings.
+          </p>
+          <form onSubmit={handleClaimAdmin} className="flex flex-col gap-4">
+            <input
+              type="text"
+              value={adminTokenInput}
+              onChange={(e) => setAdminTokenInput(e.target.value)}
+              placeholder="Paste your Admin Token here"
+              className="w-full px-4 py-3 border border-border rounded-xl bg-background text-foreground text-sm focus:outline-none focus:ring-2 focus:ring-primary"
+            />
+            <Button
+              type="submit"
+              className="w-full rounded-full font-bold h-12"
+              disabled={claimFirstAdmin.isPending || !adminTokenInput.trim()}
+            >
+              {claimFirstAdmin.isPending ? (
+                <>
+                  <Loader2 className="w-4 h-4 mr-2 animate-spin" /> Verifying...
+                </>
+              ) : (
+                "Become Admin"
+              )}
+            </Button>
+            {claimFirstAdmin.isError && (
+              <p className="text-sm text-destructive">
+                Invalid token or admin already assigned. Check your Caffeine app
+                settings for the correct token.
+              </p>
+            )}
+          </form>
+          <p className="text-xs text-muted-foreground mt-6">
+            Already have an account?{" "}
+            <Link to="/" className="underline">
+              Go to Home
+            </Link>
+          </p>
+        </div>
       </main>
     );
   }
