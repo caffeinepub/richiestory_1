@@ -40,8 +40,8 @@ const rarityColors: Record<Rarity, string> = {
 };
 
 export default function AdminPage() {
-  const { identity, loginStatus, login } = useInternetIdentity();
-  const isLoggedIn = loginStatus === "success" && !!identity;
+  const { identity, login } = useInternetIdentity();
+  const isLoggedIn = !!identity;
   const [authModalOpen, setAuthModalOpen] = useState(false);
   const { data: isAdmin, isLoading: adminLoading } = useIsCallerAdmin();
   const { data: rabbits, isLoading: rabbitsLoading } = useGetAllRabbits();

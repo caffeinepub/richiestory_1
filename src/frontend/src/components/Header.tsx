@@ -3,7 +3,6 @@ import { Link, useLocation } from "@tanstack/react-router";
 import { LogOut, Menu, Settings, User, X } from "lucide-react";
 import { useState } from "react";
 import { useInternetIdentity } from "../hooks/useInternetIdentity";
-import { useIsCallerAdmin } from "../hooks/useQueries";
 import { AuthModal } from "./AuthModal";
 
 const navLinks = [
@@ -13,12 +12,11 @@ const navLinks = [
 ];
 
 export function Header() {
-  const { login, clear, loginStatus, identity } = useInternetIdentity();
+  const { login, clear, identity } = useInternetIdentity();
   const location = useLocation();
   const [mobileOpen, setMobileOpen] = useState(false);
   const [authModalOpen, setAuthModalOpen] = useState(false);
-  const isLoggedIn = loginStatus === "success" && !!identity;
-  const { data: isAdmin } = useIsCallerAdmin();
+  const isLoggedIn = !!identity;
 
   const openAuth = () => setAuthModalOpen(true);
 
@@ -61,7 +59,7 @@ export function Header() {
               {link.label}
             </Link>
           ))}
-          {isAdmin && (
+          {isLoggedIn && (
             <Link
               to="/admin"
               className={`text-sm font-semibold transition-colors hover:text-primary flex items-center gap-1 ${
@@ -155,7 +153,7 @@ export function Header() {
               {link.label}
             </Link>
           ))}
-          {isAdmin && (
+          {isLoggedIn && (
             <Link
               to="/admin"
               className="text-sm font-semibold text-muted-foreground hover:text-primary flex items-center gap-1"

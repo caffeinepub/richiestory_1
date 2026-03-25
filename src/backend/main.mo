@@ -339,7 +339,6 @@ actor {
                 };
                 rabbits.add(rabbitId, updatedRabbit);
 
-                // Update owner profile
                 switch (collectors.get(newOwner)) {
                   case (null) { Runtime.trap("Collector not found") };
                   case (?profile) {
@@ -616,17 +615,18 @@ actor {
     };
   };
 
-  // Allow claiming admin role even if already registered as user,
-  // as long as no admin has been assigned yet and the caller provides the correct token.
+  // Claim admin role using Admin Token.
+  // Removes the adminAssigned restriction so the owner can always reclaim admin
+  // with the correct token, even if the system previously set adminAssigned = true.
   public shared ({ caller }) func claimFirstAdmin(userSecret : Text) : async () {
     switch (Prim.envVar<system>("CAFFEINE_ADMIN_TOKEN")) {
       case (null) { Runtime.trap("CAFFEINE_ADMIN_TOKEN not set") };
       case (?adminToken) {
-        if (not accessControlState.adminAssigned and userSecret == adminToken) {
+        if (userSecret == adminToken) {
           accessControlState.userRoles.add(caller, #admin);
           accessControlState.adminAssigned := true;
         } else {
-          Runtime.trap("Invalid admin token or admin already assigned");
+          Runtime.trap("Invalid admin token");
         };
       };
     };
